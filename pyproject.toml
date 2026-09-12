@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dijkstra-corrected"
+version = "0.1.0"
+description = "A small, educational Dijkstra shortest-path module and JSON CLI."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Bastien DFD" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Education",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Education",
+]
+dependencies = []
+
+[project.optional-dependencies]
+notebook = ["numpy>=1.24", "scipy>=1.10", "jupyter>=1.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+dijkstra-corrected = "dijkstra_corrected.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
