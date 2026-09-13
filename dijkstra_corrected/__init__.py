@@ -6,7 +6,7 @@ from collections.abc import Hashable, Mapping
 from dataclasses import dataclass
 from heapq import heappop, heappush
 from itertools import count
-from math import inf
+from math import inf, isfinite
 from numbers import Real
 from typing import TypeAlias
 
@@ -30,6 +30,7 @@ def shortest_path(graph: Graph, source: Node, target: Node) -> PathResult | None
     supplied edges. A negative edge weight raises ``ValueError`` because
     Dijkstra's algorithm is not valid for such graphs.
     """
+    _validate_graph(graph)
     if source not in graph:
         raise KeyError(f"source node {source!r} is not in the graph")
     if target not in graph:
@@ -48,10 +49,6 @@ def shortest_path(graph: Graph, source: Node, target: Node) -> PathResult | None
             return PathResult(current_distance, _reconstruct_path(predecessors, source, target))
 
         for neighbor, weight in graph[current].items():
-            if not isinstance(weight, Real) or isinstance(weight, bool) or weight < 0:
-                raise ValueError(f"edge {current!r} -> {neighbor!r} has an invalid weight: {weight!r}")
-            if neighbor not in graph:
-                raise KeyError(f"neighbor node {neighbor!r} is not in the graph")
             candidate_distance = current_distance + weight
             if candidate_distance < distances.get(neighbor, inf):
                 distances[neighbor] = candidate_distance
@@ -59,6 +56,20 @@ def shortest_path(graph: Graph, source: Node, target: Node) -> PathResult | None
                 heappush(queue, (candidate_distance, next(sequence), neighbor))
 
     return None
+
+
+def _validate_graph(graph: Graph) -> None:
+    if not isinstance(graph, Mapping):
+        raise TypeError("graph must be an adjacency mapping")
+
+    for current, neighbors in graph.items():
+        if not isinstance(neighbors, Mapping):
+            raise TypeError(f"adjacency for node {current!r} must be a mapping")
+        for neighbor, weight in neighbors.items():
+            if not isinstance(weight, Real) or isinstance(weight, bool) or not isfinite(weight) or weight < 0:
+                raise ValueError(f"edge {current!r} -> {neighbor!r} has an invalid weight: {weight!r}")
+            if neighbor not in graph:
+                raise KeyError(f"neighbor node {neighbor!r} is not in the graph")
 
 
 def _reconstruct_path(predecessors: Mapping[Node, Node], source: Node, target: Node) -> tuple[Node, ...]:
